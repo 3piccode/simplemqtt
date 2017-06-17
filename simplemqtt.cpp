@@ -7,6 +7,8 @@ const char *user;
 const char *pswd;
 const char *cli_ID;
 
+const char *DEBUG_X_Return;
+
 String Simplemqtt_Subscribe_Msg_String;
 
 void initSimplemqtt(const char *domain_host, uint16_t port, PubSubClient cli, const char *user, const char *pwd, const char *cli_ID)
@@ -24,25 +26,17 @@ void initSimplemqtt(const char *domain_host, uint16_t port, PubSubClient cli, co
 void Simplemqtt_ReConnect(const char *subTopic)
 {
 	while(!pubcli.connected()){
-#if DEBUX_MQTT
-		Serial.println("Attempt Mqtt connection");
-#endif
 		if(pubcli.connect(cli_ID, user, pswd)){
-#if DEBUX_MQTT
-			Serial.println("Mqtt Connected");
-#endif
 			if(pubcli.subscribe(subTopic, 1)){
 #if DEBUX_MQTT
-				Serial.println("Success Subscribe");
+				DEBUG_X_Return = "Subscribe";
 #endif				
 			}else{
-				// todo:
+				// failed
 			}
 		} else {
 #if DEBUX_MQTT
-			Serial.print("failed, rc=");
-			Serial.print(pubcli.state());
-			Serial.println(" try again in 5 seconds");
+			DEBUG_X_Return = pubcli.state();
 #endif
 			delay(5000);
 		}
@@ -63,15 +57,13 @@ bool MQTT_cli_unSubscribe(const char* topic)
 void Simplemqtt_callback_fn(char* topic, byte* payload, unsigned int length)
 {
 #if DEBUX_MQTT
-	Serial.print("Message arrived [");
-	Serial.print(topic);
-	Serial.print("] ");
+	DEBUG_X_Return = "Message Arrived";
 #endif
 	MQTT_cli_Subscribe_Msg_String = "";
 	for (int i = 0; i < length; i++) {
 		MQTT_cli_Subscribe_Msg_String += (char)payload[i];
 #if DEBUX_MQTT
-		Serial.print((char)payload[i]);
+		DEBUG_X_Return = (char)payload[i];
 #endif
 	}
 }
