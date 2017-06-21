@@ -1,6 +1,6 @@
 #include "simplemqtt.h"
 
-PubSubClient pubcli;
+
 const char *host;
 uint16_t port;
 const char *user;
@@ -10,12 +10,14 @@ const char *cli_ID;
 const char *DEBUG_X_Return;
 
 String Simplemqtt_Subscribe_Msg_String;
+String MQTT_cli_Subscribe_Msg_String;
 
-void initSimplemqtt(const char *domain_host, uint16_t port, PubSubClient cli, const char *user, const char *pwd, const char *cli_ID)
+PubSubClient pubcli;
+
+void initSimplemqtt(const char *domain_host, uint16_t port, const char *user, const char *pwd, const char *cli_ID)
 {
 	host = domain_host;
 	port = port;
-	pubcli = cli;
 	user = user;
 	pswd = pwd;
 	cli_ID = cli_ID;
@@ -23,22 +25,51 @@ void initSimplemqtt(const char *domain_host, uint16_t port, PubSubClient cli, co
 	MQTT_cli_Subscribe_Msg_String = "";
 }
 
+void initSimplemqtt(const char *domain_host, uint16_t port, const char *client_ID)
+{
+	host = domain_host;
+	port = port;
+	pubcli = mPubSubClient;
+	user = "";
+	pswd = "";
+	cli_ID = client_ID;
+	pubcli.setServer(host, port);
+	MQTT_cli_Subscribe_Msg_String = "";
+}
+
 void Simplemqtt_ReConnect(const char *subTopic)
 {
 	while(!pubcli.connected()){
-		if(pubcli.connect(cli_ID, user, pswd)){
-			if(pubcli.subscribe(subTopic, 1)){
+		if(strlen(user)>0 && strlen(pswd)>0){
+			if(pubcli.connect(cli_ID, user, pswd)){
+				if(pubcli.subscribe(subTopic, 1)){
 #if DEBUX_MQTT
-				DEBUG_X_Return = "Subscribe";
+					DEBUG_X_Return = "Subscribe";
 #endif				
-			}else{
-				// failed
+				}else{
+					// failed
+				}
+			} else {
+#if DEBUX_MQTT
+				DEBUG_X_Return = pubcli.state();
+#endif
+				delay(5000);
 			}
 		} else {
+			if(pubcli.connect(cli_ID)){
+				if(pubcli.subscribe(subTopic, 1)){
 #if DEBUX_MQTT
-			DEBUG_X_Return = pubcli.state();
+					DEBUG_X_Return = "Subscribe";
+#endif				
+				}else{
+					// failed
+				}
+			} else {
+#if DEBUX_MQTT
+				DEBUG_X_Return = pubcli.state();
 #endif
-			delay(5000);
+				delay(5000);
+			}
 		}
 	}
 }
@@ -70,7 +101,7 @@ void Simplemqtt_callback_fn(char* topic, byte* payload, unsigned int length)
 
 void initSimplemqtt_callBack()
 {
-	pubcli.setCallback(MQTT_cli_callback_fn);
+	pubcli.setCallback(Simplemqtt_callback_fn);
 }
 
 String Simplemqtt_callBack_Subscribe_Msg_String()
@@ -92,4 +123,5 @@ void Simplemqtt_disconnect()
 {
 	pubcli.disconnect();
 }
+
 
