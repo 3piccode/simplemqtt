@@ -3,7 +3,9 @@
 #ifndef simplemqtt_H
 #define simplemqtt_H
 
-void initSimplemqtt(const char *domain_host, uint16_t port, PubSubClient cli, const char *user, const char *pwd, const char *cli_ID);
+void initSimplemqtt(const char *domain_host, uint16_t port, const char *client_ID);
+
+void initSimplemqtt(const char *domain_host, uint16_t port, const char *user, const char *pwd, const char *cli_ID);
 void initSimplemqtt_callBack();
 
 void Simplemqtt_ReConnect(const char *subTopic);
