@@ -1,6 +1,5 @@
 #include "simplemqtt.h"
 
-
 const char *host;
 uint16_t port;
 const char *user;
@@ -123,5 +122,3 @@ void Simplemqtt_disconnect()
 {
 	pubcli.disconnect();
 }
-
-
